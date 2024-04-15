@@ -1,0 +1,35 @@
+# Create app directory and change owner to app user/group
+- name: Define '{{app_dir}} owner and group'
+  ansible.builtin.set_fact:
+    owner_name: '{{app_username}}'
+    owner_group: '{{app_group}}'
+
+- name: Create app directory
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: "{{ app_username }}"
+    group: "{{ app_group }}"
+    mode: '0755'
+
+- name: Get "{{ app_dir }}" directory ownership
+  ansible.builtin.stat:
+    path: "{{ app_dir }}"
+  register: app_dir_stat
+
+- name: Show ""{{ app_dir }} directory ownership
+  ansible.builtin.debug:
+    msg: | 
+      Directory: "{{ app_dir }}"
+      Owner: {{ app_dir_stat.stat.pw_name }}
+      Group: {{ app_dir_stat.stat.gr_name}}
+  when:
+    - app_dir_stat.stat.pw_name != owner_name
+    - app_dir_stat.stat.gr_name != owner_group
+
+- name: Check if owner and group are not '{{ app_username }}'
+  ansible.builtin.fail:
+    msg: "Ownership check failed: Owner or group is not '{{app_username}}'"
+  when: 
+    - app_dir_stat.stat.pw_name != owner_name
+    - app_dir_stat.stat.gr_name != owner_group

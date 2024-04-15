@@ -1,0 +1,6 @@
+---
+# handlers file for example_role
+- name: Restart Tomcat service
+  ansible.builtin.service:
+    name: tomcat9
+    state: restarted

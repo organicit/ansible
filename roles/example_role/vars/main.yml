@@ -1,0 +1,6 @@
+---
+# vars file for plex_webfocus
+app_username: appuser1
+app_dir: /app/home/dir
+mount_source: /mount/source
+app_group: "{{ app_username }}"

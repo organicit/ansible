@@ -1,0 +1,9 @@
+# Show current pam.d/ configuration
+- name: Get current common-password config
+  ansible.builtin.slurp:
+    src: /etc/pam.d/common-password
+  register: common_password_file
+
+- name: Print returned information
+  ansible.builtin.debug:
+    msg: "{{ common_password_file['content'] | b64decode }}"

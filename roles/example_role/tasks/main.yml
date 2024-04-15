@@ -1,0 +1,25 @@
+---
+# tasks file for example_role
+- name: Load pamdconf
+  ansible.builtin.include_tasks: pamdconf.yml
+  when: pamdconf
+
+- name: Load getpamdconf
+  ansible.builtin.include_tasks: getpamdconf.yml
+  when: getpamdconf
+
+- name: Load createappuser
+  ansible.builtin.include_tasks: createappuser.yml
+  when: createappuser
+
+- name: Load createappdir
+  ansible.builtin.include_tasks: createappdir.yml
+  when: createappdir
+
+- name: Load fstabconf
+  ansible.builtin.include_tasks: fstabconf.yml
+  when: fstabconf
+
+- name: Load installtomcat
+  ansible.builtin.include_tasks: installtomcat.yml
+  when: "'app' in ansible_facts['hostname']"

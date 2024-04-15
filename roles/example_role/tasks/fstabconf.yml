@@ -1,0 +1,14 @@
+# Modify /etc/fstab/ configuration
+- name: Unmount /data
+  ansible.posix.mount:
+    path: /data
+    state: unmounted
+
+- name: Update File System Table
+  ansible.posix.mount:
+    path: "{{ app_dir }}"
+    src: "{{ mount_source }}"
+    fstype: ext4
+    dump: 0
+    passno: 0
+    state: mounted

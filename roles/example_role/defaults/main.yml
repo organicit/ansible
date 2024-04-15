@@ -1,0 +1,8 @@
+---
+# defaults file for example_role
+getpamdconf: true
+pamdconf: true
+createappuser: true
+createappdir: true
+fstabconf: true
+installtomcat: true
