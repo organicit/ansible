@@ -1,6 +1,6 @@
 ---
 - name: Test Playbook Semaphore
-  hosts: all
+  hosts: 192.168.0.189
   gather_facts: true
 
   roles:
