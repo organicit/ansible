@@ -1,0 +1,8 @@
+---
+- name: Test Playbook Semaphore
+  hosts: all
+  gather_facts: true
+
+  roles:
+    - example_role
+
