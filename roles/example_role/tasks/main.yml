@@ -22,4 +22,4 @@
 
 - name: Load installtomcat
   ansible.builtin.include_tasks: installtomcat.yml
-  when: "'app' in ansible_facts['hostname']"
+  when: installtomcat

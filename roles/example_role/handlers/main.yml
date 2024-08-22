@@ -4,3 +4,4 @@
   ansible.builtin.service:
     name: tomcat9
     state: restarted
+  ignore_errors: true

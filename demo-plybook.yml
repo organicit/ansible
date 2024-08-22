@@ -1,8 +1,16 @@
 ---
 - name: Test Playbook Semaphore
-  hosts: 192.168.0.189
+  hosts: all
   gather_facts: true
+  become: true
+  become_user: root
+  vars:
+    ansible_user: adminuser
 
-  roles:
-    - example_role
 
+      #  roles:
+      #- example_role
+
+  tasks:
+    - debug:
+        msg: "Hello Nia"

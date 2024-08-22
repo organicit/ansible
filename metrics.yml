@@ -1,0 +1,30 @@
+---
+- name: Metrics RPi
+  hosts: 192.168.0.72
+  gather_facts: true
+  vars:
+    ansible_user: rsanchez
+
+  tasks:
+    - name: Collect CPU usage
+      shell: "top -bn1 | grep 'Cpu(s)' | awk '{print $2 + $4}'"
+      register: cpu_usage
+
+    - name: Collect memory usage
+      shell: "free | grep Mem | awk '{print $3/$2 * 100.0}'"
+      register: mem_usage
+
+    - name: Collect disk usage
+      shell: "df -h / | grep / | awk '{ print $5 }' | sed 's/%//g'"
+      register: disk_usage
+
+    - name: Save metrics to file
+      copy:
+        content: |
+          {
+            "cpu_usage": "{{ cpu_usage.stdout }}",
+            "mem_usage": "{{ mem_usage.stdout }}",
+            "disk_usage": "{{ disk_usage.stdout }}"
+          }
+        dest: /tmp/metrics.json
+      delegate_to: localhost
