@@ -1,6 +1,7 @@
 *** Settings ***
-Library           JSONLibrary
+Library           OperatingSystem
 Library           Collections
+Library           JSONLibrary 
 
 *** Variables ***
 ${THRESHOLD_CPU}       75  # 75% CPU usage threshold

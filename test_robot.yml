@@ -2,6 +2,8 @@
 - name: Metrics RPi
   hosts: 192.168.0.72
   gather_facts: true
+  become: true
+  become_user: root
   vars:
     ansible_user: rsanchez
 
@@ -18,7 +20,7 @@
       shell: "df -h / | grep / | awk '{ print $5 }' | sed 's/%//g'"
       register: disk_usage
 
-    - name: Save metrics to file
+    - name: Save metrics to file on Raspberry Pi
       copy:
         content: |
           {
@@ -27,16 +29,21 @@
             "disk_usage": "{{ disk_usage.stdout }}"
           }
         dest: /tmp/metrics.json
-        remote_src: false
       delegate_to: localhost
 
-    - name: Execute Robot Framework Test
-      shell: "robot -d /tmp/robot_results /media/ewilson/Repositories/ansible/rpi_resources.robot"
-      args:
-        chdir: /tmp
+- name: Robot test
+  hosts: localhost
+  gather_facts: false
+  become: true
+  become_user: root
+  vars:
+    ansible_user: adminuser
+
+  tasks:
+    - name: Run Robot Framework tests on Ansible control machine
+      shell: "robot -d /tmp/robot_results rpi_resources.robot"
       register: robot_output
-      delegate_to: localhost
 
-    - name: Display Robot Framework Result
+    - name: Display Robot Framework output
       debug:
-        var: robot_output
+        var: robot_output.stdout

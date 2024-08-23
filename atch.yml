@@ -1,0 +1,30 @@
+---
+- name: Manage Ubuntu updates
+  hosts: 192.168.0.72
+  become: true
+  become_user: root
+  vars:
+    ansible_user: rsanchez
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      register: update_cache_result
+
+    - name: Check for upgradable packages
+      apt:
+        upgrade: dist
+        update_cache: no
+      register: apt_upgrade_result
+      check_mode: yes
+
+    - name: Display upgradable packages
+      debug:
+        msg: "{{ apt_upgrade_result.stdout_lines }}"
+      when: apt_upgrade_result.changed
+
+    - name: Apply upgrades
+      apt:
+        upgrade: dist
+        update_cache: no
+      when: ansible_check_mode == False
