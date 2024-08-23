@@ -28,3 +28,16 @@
           }
         dest: /tmp/metrics.json
       delegate_to: localhost
+
+    - name: Execute Robot Framework Test
+      shell: "robot -d /tmp/robot_results /media/ewilson/Repositories/ansible/rpi_resources.robot"
+      args:
+        chdir: /tmp
+      register: robot_output
+      delegate_to: localhost
+
+    - name: Display Robot Framework Result
+      debug:
+        var: robot_output
+
+    
