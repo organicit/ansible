@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: semaphore
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: semaphore
+  template:
+    metadata:
+      labels:
+        app: semaphore
+    spec:
+      containers:
+      - name: semaphore
+        image: semaphoreui/semaphore:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: SEMAPHORE_DB_USER
+          value: "semaphore"
+        - name: SEMAPHORE_DB_PASS
+          value: "semaphore"
+        - name: SEMAPHORE_DB_HOST
+          value: "postgres"
+        - name: SEMAPHORE_DB_PORT
+          value: "5432"
+        - name: SEMAPHORE_DB_DIALECT
+          value: "postgres"
+        - name: SEMAPHORE_DB
+          value: "semaphore"
+        - name: SEMAPHORE_PLAYBOOK_PATH
+          value: "/tmp/semaphore/"
+        - name: SEMAPHORE_ADMIN_PASSWORD
+          value: "changeme"
+        - name: SEMAPHORE_ADMIN_NAME
+          value: "admin"
+        - name: SEMAPHORE_ADMIN_EMAIL
+          value: "admin@localhost"
+        - name: SEMAPHORE_ADMIN
+          value: "admin"
+        - name: SEMAPHORE_ACCESS_KEY_ENCRYPTION
+          value: "o8jAapVDWOwrATG823R+Z5ioen02zwEV6fn2k0hKvM8="
+        - name: SEMAPHORE_LDAP_ACTIVATED
+          value: "no"
+        - name: SEMAPHORE_LDAP_HOST
+          value: "dc01.local.example.com"
+        - name: SEMAPHORE_LDAP_PORT
+          value: "636"
+        - name: SEMAPHORE_LDAP_NEEDTLS
+          value: "yes"
+        - name: SEMAPHORE_LDAP_DN_BIND
+          value: "uid=bind_user,cn=users,cn=accounts,dc=local,dc=shiftsystems,dc=net"
+        - name: SEMAPHORE_LDAP_PASSWORD
+          value: "ldap_bind_account_password"
+        - name: SEMAPHORE_LDAP_DN_SEARCH
+          value: "dc=local,dc=example,dc=com"
+        - name: SEMAPHORE_LDAP_SEARCH_FILTER
+          value: "(& (uid=%s) (memberOf=cn=ipausers,cn=groups,cn=accounts,dc=local,dc=example,dc=com))"
+        - name: TZ
+          value: "MST"
+      volumes:
+      - name: semaphore-data
+        emptyDir: {}

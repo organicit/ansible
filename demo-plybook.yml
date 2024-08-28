@@ -8,9 +8,6 @@
     ansible_user: adminuser
 
 
-      #  roles:
-      #- example_role
+  roles:
+    - example_role
 
-  tasks:
-    - debug:
-        msg: "Hello Nia"

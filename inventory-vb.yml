@@ -1,0 +1,11 @@
+all:
+  hosts:
+    semaphoreui-ansible:
+      vars:
+        ansible_user: adminuser
+    k8s-test:
+      vars:
+        ansible_user: adminuser
+    rick-prime:
+      vars:
+        ansible_user: rsanchez
