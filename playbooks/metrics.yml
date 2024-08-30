@@ -1,0 +1,102 @@
+- name: Metrics RPi
+  hosts: all
+  gather_facts: true
+  become: true
+  vars:
+    ansible_user: ewilson
+
+  tasks:
+    - name: Collect Resource Usage for Raspberry Pi
+      when: metrics is not defined
+      block:
+        - name: Collect CPU usage
+          ansible.builtin.shell: "top -bn1 | grep 'Cpu(s)' | awk '{print $2 + $4}'"
+          register: cpu_usage
+
+        - name: Collect memory usage
+          ansible.builtin.shell: "free | grep Mem | awk '{print $3/$2 * 100.0}'"
+          register: mem_usage
+
+        - name: Collect disk usage
+          ansible.builtin.shell: "df -h / | grep / | awk '{ print $5 }' | sed 's/%//g'"
+          register: disk_usage
+
+    - name: Save metrics to JSON file
+      ansible.builtin.set_fact:
+        metrics: 
+          {
+            "cpu_usage": "{{ cpu_usage.stdout }}",
+            "mem_usage": "{{ mem_usage.stdout }}",
+            "disk_usage": "{{ disk_usage.stdout }}"
+          }
+        dest: "/tmp/{{ inventory_hostname }}-metrics.json"
+        mode: '0744'
+      delegate_to: manila-john
+
+    - debug:
+        var: metrics
+
+    - name: Make JSON file
+      ansible.builtin.copy:
+        content: "{{ metrics | to_nice_json }}"
+        dest: "/tmp/robot/{{ inventory_hostname }}-metrics.json"
+        mode: '0744'
+      delegate_to: manila-john
+
+    - name: Generate Robot Framework Test Cases
+      ansible.builtin.template:
+        src: rpi_resources.robot.j2
+        dest: "/tmp/robot/{{ inventory_hostname }}-rpi_resources.robot"
+        mode: '0744'
+      delegate_to: manila-john
+      register: template_result
+
+
+- name: Execute Robot Framework Test in Remote environment
+  hosts: manila-john
+  gather_facts: false
+  become: true
+  become_user: ewilson
+  vars:
+    ansible_user: ewilson
+
+  tasks:
+    - name: Ensure Robot Framework is installed
+      ansible.builtin.pip:
+        name: robotframework
+        state: present
+        executable: /usr/bin/pip3
+
+    - name: Install Robot Framework and JSONLibrary
+      ansible.builtin.pip:
+        name:
+          - robotframework
+          - robotframework-jsonlibrary
+        state: present
+
+    - name: Copy robo-test.py to manila-john
+      ansible.builtin.copy:
+        src: robo-test.py
+        dest: /tmp/
+        mode: '0777'
+
+    - name: Run a script using an executable in a system path
+      ansible.builtin.script:
+        cmd: robo-test.py
+        chdir: /tmp/robot
+      register: robot_output
+
+    - name: Display Robot Framework Result
+      ansible.builtin.debug:
+        var: robot_output.stdout_lines
+
+    - name: Clean up /tmp/robot directory
+      ansible.builtin.file:
+        name: /tmp/robot/*
+        state: absent
+      register: cleanup_result
+
+    - name: Display Cleanup Result
+      ansible.builtin.debug:
+        var: cleanup_result
+

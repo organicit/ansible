@@ -16,6 +16,7 @@ Thumbs.db
 # Ignore build artifacts
 /build
 /dist
+/.todo
 
 # Ignore virtual environment
 /venv
