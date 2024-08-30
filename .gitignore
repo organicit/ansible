@@ -42,3 +42,6 @@ config.ini
 # Ignore .vscode files
 .vscode
 .secrets
+vars/* 
+*/vault*
+vault/*
