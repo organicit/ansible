@@ -1,6 +1,0 @@
----
-- name: example_playbook
-  hosts: localhost
-  remote_user: root
-  roles:
-    - example_role

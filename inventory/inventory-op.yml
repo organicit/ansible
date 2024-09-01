@@ -1,8 +1,5 @@
 all:
   hosts:    
-    rick-prime:
-      vars:
-        ansible_user: rsanchez
-    manila-john:
-      vars:
-        ansible_user: ewilson
+    ew-jerricky-p1:
+  vars:
+    anisble_user: adminuser

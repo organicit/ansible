@@ -1,0 +1,7 @@
+# Install Tomcat
+- name: Install Tomcat package
+  ansible.builtin.apt:
+    name: tomcat9
+    state: present
+    update_cache: true
+  notify: Restart Tomcat service

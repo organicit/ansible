@@ -1,0 +1,3 @@
+---
+# defaults file for deploy_semaphore
+ansible_ssh_common_args: '-o StrictHostKeyChecking=no'

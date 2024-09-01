@@ -1,0 +1,20 @@
+---
+# Modify pam.d configuration
+- name: Set /etc/pam.d/common-password configuration (pam_unix.so)
+  community.general.pamd:
+    name: common-password
+    type: password
+    control: "[success=2 default=ignore]"
+    module_path: pam_unix.so
+    module_arguments: 'obscure
+        yescrypt'
+    new_control: "[success=1 default=ignore]"
+    state: updated
+
+- name: Remove rule for /etc/pam.d/common-password
+  community.general.pamd:
+    name: common-password
+    type: password
+    control: requisite
+    module_path: pam_pwquality.so
+    state: absent
