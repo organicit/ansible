@@ -1,0 +1,13 @@
+- name: Ensure Semaphore configurations directory exists
+  ansible.builtin.file:
+    path: /etc/semaphore
+    state: directory
+    mode: '0755'
+    become: true
+
+- name: Copy Semaphore configuration file to /etc/semaphore
+  ansible.builtin.copy:
+    src: config.json
+    dest: /etc/semaphore/config.json
+    mode: '0644'
+    become: true

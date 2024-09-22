@@ -1,38 +1,105 @@
-Role Name
-=========
+# Deploy Semaphore Role
 
-A brief description of the role goes here.
+This Ansible role is designed to deploy Semaphore, an open-source web-based solution for Ansible playbooks. Below are the manual steps necessary to configure and start Semaphore.
+## Prerequisites
 
-Requirements
-------------
+1. **Clone this repository:**
+  ```sh
+  git clone https://github.com/all-things-automated/ansible.git
+  ```
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+2. **Ensure the inventory is accurate for your environment:**
+  Review and update the `inventory` file in the cloned repository to match your environment settings.
 
-Role Variables
---------------
+3. **Execute the Ansible playbook:**
+  ```sh
+  ansible-playbook -i {{ your_inventory }} deploy-semaphore.yml -u {{ ansible_user }} --ask-pass --ask-become-pass
+  ```
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+## Manual Steps
+This Ansible role is designed to deploy Semaphore, an open-source web-based solution for Ansible playbooks. Below are the manual steps necessary to configure and start Semaphore.
 
-Dependencies
-------------
+### MariaDB Configuration
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+1. **Run the MariaDB secure installation script:**
+  ```sh
+  sudo mariadb-secure-installation
+  ```
 
-Example Playbook
-----------------
+2. **Follow the prompts:**
+  ```
+  Switch to unix_socket authentication [Y/n] n
+  Change the root password? [Y/n] y
+  Remove anonymous users? [Y/n] y
+  Disallow root login remotely? [Y/n] y
+  Remove test database and access to it? [Y/n] y
+  Reload privilege tables now? [Y/n] y
+  ```
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+### Semaphore Setup following MariaDB Configuarion
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+1. **Create the systemd service file for Semaphore:**
+  ```sh
+  sudo vim /etc/systemd/system/semaphore.service
+  ```
+  Add the following content to the file:
+  ```
+  [Unit]
+  Description=Semaphore Ansible UI
+  Documentation=https://github.com/ansible-semaphore/semaphore
+  Wants=network-online.target
+  After=network-online.target
 
-License
--------
+  [Service]
+  Type=simple
+  ExecReload=/bin/kill -HUP $MAINPID
+  ExecStart=/usr/bin/semaphore server --config /etc/semaphore/config.json
+  SyslogIdentifier=semaphore
+  Restart=always
 
-BSD
+  [Install]
+  WantedBy=multi-user.target
+  ```
 
-Author Information
-------------------
+2. **Copy your configuration file to the created directory:**
+  ```sh
+  sudo cp /root/config.json /etc/semaphore/config.json
+  ```
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+3. **Stop running instances of Semaphore:**
+  ```sh
+  sudo pkill semaphore
+  ```
+
+4. **Confirm no Semaphore instances are running:**
+  ```sh
+  ps aux | grep sema
+  ```
+
+5. **Reload the systemd manager configuration:**
+  ```sh
+  sudo systemctl daemon-reload
+  ```
+
+6. **Start Semaphore service:**
+  ```sh
+  sudo systemctl start semaphore
+  ```
+
+7. **Check the status of Semaphore service:**
+  ```sh
+  systemctl status semaphore
+  ```
+
+8. **Enable Semaphore service to start on boot:**
+  ```sh
+  sudo systemctl enable semaphore
+  ```
+
+9. **Verify Semaphore is listening on port 3000**
+  ```sh
+  sudo ss -tunelp | grep 3000
+  ```
+
+10. **Access Semaphore:**
+  Open your browser and navigate to `https://{{ localhost_IP }}:3000`

@@ -1,6 +1,6 @@
 ---
 - name: Deploy Semaphore
-  hosts: all
+  hosts: "{{ semaphore_host }}"
   gather_facts: false
   become: true
 

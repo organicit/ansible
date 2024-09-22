@@ -24,17 +24,28 @@
     name: ansible
     state: present
 
+- name: Ensure destination directory exists
+  ansible.builtin.file:
+    path: files/
+    state: directory
+    mode: '0755'
+  delegate_to: localhost
+
 - name: Download and install MariaDB repo setup
   ansible.builtin.get_url:
     url: https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
+    dest: files/mariadb_repo_setup
+    mode: '0755'
+  delegate_to: localhost
+
+- name: Copy mariadb_repo_setup script to remote host
+  ansible.builtin.copy:
+    src: mariadb_repo_setup
     dest: /tmp/mariadb_repo_setup
     mode: '0755'
 
 - name: Run MariaDB repo setup
-  ansible.builtin.script:
-    cmd: /tmp/mariadb_repo_setup
-    creates: /etc/apt/sources.list.d/mariadb.list
-  
+  ansible.builtin.command: /tmp/mariadb_repo_setup
 
 - name: Install MariaDB server and client
   ansible.builtin.apt:
@@ -47,39 +58,33 @@
   ansible.builtin.pip:
     name: PyMySQL
 
-# - name: Secure MariaDB installation
-#   community.mysql.mysql_user:
-#     name: root
-#     password: "{{ mariadb_root_password }}"
-#     host: "{{ inventory_hostname }}"
-#     state: present
+# NEED TO FIX THIS
+###########################################
+# - name: Copy the secure installation script
+#   copy:
+#     content: |
+#       #!/bin/bash
+#       sudo mariadb-secure-installation <<EOF
+#       n
+#       {{ mariadb_root_password }}
+#       {{ mariadb_root_password }}
+#       y
+#       y
+#       y
+#       y
+#       EOF
+#     dest: /tmp/mariadb_secure.sh
+#     mode: '0755'
 
-# - name: Remove anonymous users
-#   community.mysql.mysql_user:
-#     name: ''
-#     host: "{{ inventory_hostname }}"
+# - name: Run the MariaDB secure installation script
+#   command: /tmp/mariadb_secure.sh
+#   ignore_errors: yes
+
+# - name: Delete the secure installation script
+#   file:
+#     path: /tmp/mariadb_secure.sh
 #     state: absent
-
-# - name: Disallow root login remotely
-#   community.mysql.mysql_user:
-#     name: root
-#     host: '{{ item }}'
-#     state: absent
-#   with_items:
-#     - '%'
-#     - '::1'
-#     - 'localhost'
-
-# - name: Remove test database and access to it
-#   community.mysql.mysql_db:
-#     name: test
-#     state: absent
-
-# - name: Reload privilege tables
-#   community.mysql.mysql_db:
-#     name: mysql
-#     state: import
-#     target: /etc/mysql/mariadb.conf.d/50-server.cnf
+###########################################
 
 - name: Get Semaphore latest version
   ansible.builtin.uri:
@@ -106,3 +111,78 @@
   register: semaphore_path
   changed_when: false
   failed_when: "'/usr/bin/semaphore' not in semaphore_path.stdout"
+
+# NEED TO FIX THIS
+###########################################
+# - name: Ensure Semaphore configurations directory exists
+#   ansible.builtin.file:
+#     path: /etc/semaphore
+#     state: directory
+#     mode: '0755'
+
+# - name: Copy Semaphore configuration file to /etc/semaphore
+#   ansible.builtin.copy:
+#     src: config.json
+#     dest: /etc/semaphore/config.json
+#     mode: '0644'
+
+# - name: Check if semaphore process is running
+#   ansible.builtin.shell: pgrep semaphore
+#   register: semaphore_process
+#   ignore_errors: true
+
+# - name: Kill semaphore process if running
+#   ansible.builtin.command:
+#     cmd: pkill semaphore
+#   when: semaphore_process.rc == 0
+#   become: true
+
+# - name: Create semaphore service file
+#   ansible.builtin.copy:
+#     dest: /etc/systemd/system/semaphore.service
+#     content: |
+#       [Unit]
+#       Description=Semaphore Ansible UI
+#       Documentation=https://github.com/ansible-semaphore/semaphore
+#       Wants=network-online.target
+#       After=network-online.target
+
+#       [Service]
+#       Type=simple
+#       ExecReload=/bin/kill -HUP $MAINPID
+#       ExecStart=/usr/bin/semaphore server --config /etc/semaphore/config.json
+#       SyslogIdentifier=semaphore
+#       Restart=always
+
+#       [Install]
+#       WantedBy=multi-user.target
+#     mode: '0644'
+
+# - name: Reload systemd manager configuration
+#   ansible.builtin.systemd:
+#     daemon_reload: true
+
+# - name: Start semaphore service
+#   ansible.builtin.systemd:
+#     name: semaphore
+#     state: started
+#     enabled: true
+
+# - name: Check semaphore service status
+#   ansible.builtin.command:
+#     cmd: systemctl status semaphore
+#   register: semaphore_status
+#   changed_when: false
+
+# - name: Start semaphore service
+#   ansible.builtin.systemd:
+#     name: semaphore
+#     state: started
+#     enabled: true
+
+# - name: Check semaphore service status
+#   ansible.builtin.command:
+#     cmd: systemctl status semaphore
+#   register: semaphore_status
+#   changed_when: false
+###########################################
