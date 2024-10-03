@@ -1,13 +1,8 @@
 ---
-- name: Test Playbook Semaphore
-  hosts: all
-  gather_facts: true
-  become: true
-  become_user: root
-  vars:
-    ansible_user: adminuser
-
-
-  roles:
-    - example_role
-
+- name: "Print localhost facts"
+  hosts: localhost
+  gather_facts: true  # Enable fact gathering
+  tasks:
+    - name: "Display all localhost facts"
+      ansible.builtin.debug:
+        var: ansible_facts  # This will print all gathered facts
