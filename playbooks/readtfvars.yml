@@ -1,0 +1,58 @@
+---
+- name: "Recursively search for .tfvars files and group duplicate policies"
+  hosts: localhost
+  gather_facts: false
+  vars:
+    search_directory: ""  # Directory to search in
+    path_regex: '^path\s*=\s*"([^"]+)"$' 
+    csv_output_path: "/semaui/playbooks/results.csv"
+
+  tasks:
+    - name: "Find all .tfvars files recursively"
+      ansible.builtin.find:
+        paths: "{{ search_directory }}"
+        recurse: true
+        patterns: "*.tfvars"  # Look for .tfvars files
+      register: tfvars_files
+
+    - name: "Read and search for 'path' in each .tfvars file"
+      ansible.builtin.command:
+        cmd: "grep -E '{{ path_regex }}' {{ item.path }}"
+      register: grep_results
+      with_items: "{{ tfvars_files.files }}"
+      failed_when: false
+
+    - name: "Process grep results and extract paths"
+      ansible.builtin.set_fact:
+        paths_by_file: "{{ paths_by_file | default({}) | combine({item.item.path: {'directory': item.item.dirname, 'path': item.stdout | regex_search(path_regex, '\\1')}}) }}"
+      with_items: "{{ grep_results.results }}"
+      when: item.rc == 0  # Only process files where grep found a match
+
+    - name: "Group files by paths"
+      ansible.builtin.set_fact:
+        grouped_paths: "{{ grouped_paths | default({}) | combine({item.path: (grouped_paths[item.path] | default([])) + [item.filename]}) }}"
+      with_items: "{{ paths_by_file.values() }}"
+      loop_control:
+        label: "{{ item.path }}"
+
+    - name: "Output duplicate policies"
+      ansible.builtin.debug:
+        msg: >
+          Path: {{ item.key }}
+          Found in files: {{ item.value | join(', ') }}
+      with_dict: "{{ grouped_paths }}"
+      when: item.value | length > 1  # Only output paths found in multiple files
+
+    - name: "Prepare data for CSV output"
+      ansible.builtin.set_fact:
+        csv_data: "{{ csv_data | default([]) + [{'path': item.key, 'files': item.value | map(attribute='filename') | join(', ')}] }}"
+      with_dict: "{{ grouped_paths }}"
+
+    - name: "Generate CSV content"
+      ansible.builtin.copy:
+        dest: "{{ csv_output_path }}"
+        content: |
+          Path,Files
+          {% for row in csv_data %}
+          {{ row.path }},{{ row.files }}
+          {% endfor %}
