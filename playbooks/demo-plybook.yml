@@ -1,8 +1,22 @@
 ---
-- name: "Print localhost facts"
+- name: "Create, copy, and execute a script on localhost (inline template)"
   hosts: localhost
-  gather_facts: true  # Enable fact gathering
+  gather_facts: false
+
   tasks:
-    - name: "Display all localhost facts"
+    - name: "Create and copy a script using inline Jinja2 template"
+      ansible.builtin.copy:
+        dest: "/tmp/simple_script.sh"  # Destination path on localhost
+        content: |
+          #!/bin/bash
+          echo "Hello, this is a simple script created using Ansible inline Jinja2!"
+        mode: '0755'  # Make the script executable
+
+    - name: "Execute the script"
+      ansible.builtin.command:
+        cmd: "/tmp/simple_script.sh"
+      register: script_output
+
+    - name: "Display script output"
       ansible.builtin.debug:
-        var: ansible_facts  # This will print all gathered facts
+        msg: "Script output: {{ script_output.stdout }}"
