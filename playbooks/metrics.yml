@@ -1,9 +1,7 @@
 - name: Metrics RPi
-  hosts: all
+  hosts: localhost
   gather_facts: true
   become: true
-  vars:
-    ansible_user: ewilson
 
   tasks:
     - name: Collect Resource Usage for Raspberry Pi
