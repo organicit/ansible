@@ -1,7 +1,7 @@
 - name: Metrics RPi
   hosts: localhost
-  gather_facts: true
-  become: true
+  gather_facts: false
+  become: false
 
   tasks:
     - name: Collect Resource Usage for Raspberry Pi
@@ -29,7 +29,7 @@
           }
         dest: "/tmp/{{ inventory_hostname }}-metrics.json"
         mode: '0744'
-      delegate_to: manila-john
+#      delegate_to: manila-john
 
     - debug:
         var: metrics
@@ -39,24 +39,21 @@
         content: "{{ metrics | to_nice_json }}"
         dest: "/tmp/robot/{{ inventory_hostname }}-metrics.json"
         mode: '0744'
-      delegate_to: manila-john
+#      delegate_to: manila-john
 
     - name: Generate Robot Framework Test Cases
       ansible.builtin.template:
         src: rpi_resources.robot.j2
         dest: "/tmp/robot/{{ inventory_hostname }}-rpi_resources.robot"
         mode: '0744'
-      delegate_to: manila-john
+#      delegate_to: manila-john
       register: template_result
 
 
 - name: Execute Robot Framework Test in Remote environment
-  hosts: manila-john
+  hosts: localhost
   gather_facts: false
-  become: true
-  become_user: ewilson
-  vars:
-    ansible_user: ewilson
+  become: false
 
   tasks:
     - name: Ensure Robot Framework is installed
