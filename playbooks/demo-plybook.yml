@@ -1,22 +1,26 @@
 ---
-- name: "Create, copy, and execute a script on localhost (inline template)"
+- name: "Run tasks only if the distribution is Alpine Linux"
   hosts: localhost
-  gather_facts: false
-
+  gather_facts: true  # Ensure facts are gathered
   tasks:
-    - name: "Create and copy a script using inline Jinja2 template"
-      ansible.builtin.copy:
-        dest: "/tmp/simple_script.sh"  # Destination path on localhost
-        content: |
-          #!/bin/bash
-          echo "Hello, this is a simple script created using Ansible inline Jinja2!"
-        mode: '0755'  # Make the script executable
-
-    - name: "Execute the script"
-      ansible.builtin.command:
-        cmd: "/tmp/simple_script.sh"
-      register: script_output
-
-    - name: "Display script output"
+    - name: "Check if the distribution is Alpine"
       ansible.builtin.debug:
-        msg: "Script output: {{ script_output.stdout }}"
+        msg: "This system is running Alpine Linux!"
+      when: ansible_facts['ansible_distribution'] == "Alpine"
+
+    - name: "Install package only on Alpine"
+      ansible.builtin.package:
+        name: "curl"
+        state: present
+      when: ansible_facts['ansible_distribution'] == "Alpine"
+
+    - name: "Create a test file only on Alpine"
+      ansible.builtin.file:
+        path: "/tmp/alpine_test_file"
+        state: touch
+      when: ansible_facts['ansible_distribution'] == "Alpine"
+
+    - name: "Print a message if running on Alpine"
+      ansible.builtin.debug:
+        msg: "Alpine-specific tasks have been executed!"
+      when: ansible_facts['ansible_distribution'] == "Alpine"
