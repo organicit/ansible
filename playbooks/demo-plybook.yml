@@ -1,4 +1,4 @@
----
+--- 
 - name: "Run tasks only if the distribution is Alpine Linux"
   hosts: localhost
   gather_facts: true  # Ensure facts are gathered
@@ -10,7 +10,7 @@
     - name: "Check if the distribution is Alpine"
       ansible.builtin.debug:
         msg: "This system is running Alpine Linux!"
-      when: ansible_facts['ansible_distribution'] == "Alpine"
+      when: ansible_facts['distribution'] == "Alpine"
 
     - name: "Install package only on Alpine"
       ansible.builtin.package:
@@ -22,9 +22,9 @@
       ansible.builtin.file:
         path: "/tmp/alpine_test_file"
         state: touch
-      when: ansible_facts['ansible_distribution'] == "Alpine"
+      when: ansible_facts['distribution'] == "Alpine"
 
     - name: "Print a message if running on Alpine"
       ansible.builtin.debug:
         msg: "Alpine-specific tasks have been executed!"
-      when: ansible_facts['ansible_distribution'] == "Alpine"
+      when: ansible_facts['distribution'] == "Alpine"
